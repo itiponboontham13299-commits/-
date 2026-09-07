@@ -1,12 +1,227 @@
-{
-  "project_name": "General Restaurant Ordering System with BMI & Direct Menu",
-  "tech_stack": "HTML, Tailwind CSS, JavaScript (Frontend Web App)",
-  "features": [
-    "หน้าเลือกเมนูอาหารทั่วไปทันที พร้อมหมวดหมู่อาหาร (อาหารจานเดียว, ต้ม/แกง, ของทานเล่น, เครื่องดื่ม)",
-    "ระบบคำนวณค่า BMI เพื่อแนะนำเมนูสุขภาพเพิ่มเติมตามความต้องการ",
-    "ระบบตะกร้าสินค้าและจำลองการส่งออเดอร์เข้าห้องครัว (KDS)"
-  ],
-  "source_code": {
-    "index.html": "<!DOCTYPE html>\n<html lang=\"th\">\n<head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>ระบบสั่งอาหาร - ร้านอาหารทั่วไป</title>\n    <script src=\"https://cdn.tailwindcss.com\"></script>\n</head>\n<body class=\"bg-slate-900 text-slate-100 font-sans min-h-screen pb-24\">\n\n    <!-- Header / Navbar -->\n    <header class=\"bg-slate-800 border-b border-slate-700 sticky top-0 z-50 p-4 shadow-md\">\n        <div class=\"max-w-4xl mx-auto flex justify-between items-center\">\n            <div>\n                <h1 class=\"text-lg font-bold text-emerald-400\">🍽️ ร้านอาหารสุขใจ (โต๊ะ 01)</h1>\n                <p class=\"text-xs text-slate-400\">สั่งอาหารสะดวก ไม่ต้องรอนาน</p>\n            </div>\n            <button onclick=\"openBmiModal()\" class=\"bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-2 rounded-xl font-medium hover:bg-emerald-500/30 transition\">\n                💡 คำนวณ BMI / เมนูสุขภาพ\n            </button>\n        </div>\n    </header>\n\n    <!-- Main Container -->\n    <main class=\"max-w-4xl mx-auto p-4\">\n        \n        <!-- BMI Banner Alert (Optional toggle) -->\n        <div id=\"bmi-banner\" class=\"bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-2xl mb-6 hidden\">\n            <div class=\"flex justify-between items-start\">\n                <div>\n                    <h3 class=\"font-bold text-emerald-400 text-sm\" id=\"bmi-banner-title\">ผลลัพธ์ BMI ของคุณ</h3>\n                    <p class=\"text-xs text-slate-300 mt-1\" id=\"bmi-banner-desc\">แนะนำเมนูอาหารที่เหมาะกับสภาพร่างกายของคุณด้านล่างนี้</p>\n                </div>\n                <button onclick=\"clearBMI()\" class=\"text-xs text-slate-400 hover:text-white\">ปิด</button>\n            </div>\n        </div>\n\n        <!-- Category Filter -->\n        <div class=\"flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none\">\n            <button onclick=\"filterMenu('all', this)\" class=\"category-btn px-4 py-2 bg-emerald-500 text-slate-950 font-semibold text-sm rounded-xl whitespace-nowrap transition\">ทั้งหมด</button>\n            <button onclick=\"filterMenu('single', this)\" class=\"category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700\">อาหารจานเดียว</button>\n            <button onclick=\"filterMenu('healthy', this)\" class=\"category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700\">🥗 เมนูสุขภาพ / คลีน</button>\n            <button onclick=\"filterMenu('soup', this)\" class=\"category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700\">แกง / ต้มยำ</button>\n            <button onclick=\"filterMenu('drink', this)\" class=\"category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700\">เครื่องดื่ม</button>\n        </div>\n\n        <!-- Menu List Grid -->\n        <div id=\"menu-grid\" class=\"grid grid-cols-1 sm:grid-cols-2 gap-4\">\n            <!-- รายการอาหารจะถูกสร้างด้วย JavaScript -->\n        </div>\n    </main>\n\n    <!-- Floating Cart Bar -->\n    <div id=\"cart-bar\" class=\"fixed bottom-0 left-0 right-0 bg-slate-800 border-t border-slate-700 p-4 shadow-2xl hidden\">\n        <div class=\"max-w-4xl mx-auto flex justify-between items-center\">\n            <div>\n                <p class=\"text-xs text-slate-400\">รายการในตะกร้า</p>\n                <p class=\"text-sm font-bold text-white\"><span id=\"cart-count\">0</span> รายการ • <span id=\"cart-total\" class=\"text-emerald-400\">0</span> บาท</p>\n            </div>\n            <button onclick=\"checkout()\" class=\"bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-6 py-2.5 rounded-xl transition shadow-lg\">\n                ยืนยันสั่งอาหารเข้าครัว\n            </button>\n        </div>\n    </div>\n\n    <!-- BMI Modal -->\n    <div id=\"bmi-modal\" class=\"fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden\">\n        <div class=\"bg-slate-800 border border-slate-700 w-full max-w-md p-6 rounded-2xl shadow-2xl\">\n            <h2 class=\"text-xl font-bold text-emerald-400 mb-2\">คำนวณค่า BMI เพื่อเลือกเมนูที่เหมาะกับคุณ</h2>\n            <p class=\"text-xs text-slate-400 mb-4\">ระบบจะช่วยคัดกรองเมนูแคลอรี่ต่ำหรือโปรตีนสูงให้คุณโดยอัตโนมัติ</p>\n            \n            <div class=\"space-y-4 mb-6\">\n                <div>\n                    <label class=\"block text-xs font-medium mb-1 text-slate-300\">น้ำหนัก (กิโลกรัม)</label>\n                    <input type=\"number\" id=\"modal-weight\" placeholder=\"เช่น 60\" class=\"w-full p-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-emerald-500 text-sm\">\n                </div>\n                <div>\n                    <label class=\"block text-xs font-medium mb-1 text-slate-300\">ส่วนสูง (เซนติเมตร)</label>\n                    <input type=\"number\" id=\"modal-height\" placeholder=\"เช่น 170\" class=\"w-full p-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-emerald-500 text-sm\">\n                </div>\n            </div>\n\n            <div class=\"flex gap-2\">\n                <button onclick=\"closeBmiModal()\" class=\"flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 font-semibold text-sm rounded-xl transition\">ยกเลิก</button>\n                <button onclick=\"calculateAndApplyBMI()\" class=\"flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-sm rounded-xl transition\">ยืนยันคำนวณ</button>\n            </div>\n        </div>\n    </div>\n\n    <script>\n        // ฐานข้อมูลเมนูอาหาร\n        const menus = [\n            { id: 1, name: \"กะเพราหมูสับไข่ดาว\", category: \"single\", price: 60, tag: \"ยอดฮิต\", kcal: \"450 Kcal\", desc: \"หมูสับคั่วพริกแห้งรสจัดจด เสิร์ฟพร้อมข้าวสวยและไข่ดาวกรอบๆ\" },\n            { id: 2, name: \"ข้าวหน้าอกไก่ย่างเกาหลี (คลีน)\", category: \"healthy\", price: 89, tag: \"โปรตีนสูง / แคลต่ำ\", kcal: \"320 Kcal\", desc: \"อกไก่ย่างซอสสูตรพิเศษ ไร้น้ำมัน ทานคู่ข้าวกล้อง\" },\n            { id: 3, name: \"สลัดอกไก่ย่างน้ำใส\", category: \"healthy\", price: 79, tag: \"แคลอรี่ต่ำ\", kcal: \"180 Kcal\", desc: \"ผักสดกรอบล้างสะอาด ราดน้ำสลัดญี่ปุ่นไขมันต่ำ\" },\n            { id: 4, name: \"ต้มยำกุ้งน้ำข้น\", category: \"soup\", price: 120, tag: \"รสจัดจ้าน\", kcal: \"290 Kcal\", desc: \"กุ้งสดตัวโตในน้ำซุปต้มยำเครื่องเทศสมุนไพรแท้\" },\n            { id: 5, name: \"ข้าวผัดปูจานใหญ่\", category: \"single\", price: 80, tag: \"แนะนำ\", kcal: \"520 Kcal\", desc: \"เนื้อปูเน้นๆ ผัดเม็ดข้าวเรียงตัวสวยหอมกระทะ\" },\n            { id: 6, name: \"แกงจืดเต้าหู้หมูสับสาหร่าย\", category: \"soup\", price: 70, tag: \"ย่อยง่าย\", kcal: \"150 Kcal\", desc: \"ซุปร้อนๆ ซดคล่องคอ เหมาะสำหรับมื้อเบาๆ\" },\n            { id: 7, name: \"ชาไทยเย็นหวานน้อย\", category: \"drink\", price: 40, tag: \"เครื่องดื่ม\", kcal: \"160 Kcal\", desc: \"ชาไทยหอมเข้มข้น หวานน้อยกลมกล่อม\" },\n            { id: 8, name: \"น้ำอัดลม (โคล่า)\", category: \"drink\", price: 25, tag: \"เครื่องดื่ม\", kcal: \"140 Kcal\", desc: \"เย็นฉ่ำซ่าสะใจ\" }\n        ];\n\n        let currentCart = [];\n        let currentFilter = 'all';\n\n        // โหลดเมนูเริ่มต้น\n        window.onload = function() {\n            renderMenus(menus);\n        };\n\n        function renderMenus(data) {\n            const grid = document.getElementById('menu-grid');\n            grid.innerHTML = '';\n            \n            if (data.length === 0) {\n                grid.innerHTML = '<p class=\"text-slate-400 text-center col-span-2 py-8\">ไม่พบเมนูอาหารในหมวดหมู่นี้</p>';\n                return;\n            }\n\n            data.forEach(item => {\n                grid.innerHTML += `\n                    <div class=\"bg-slate-800 border border-slate-700 p-4 rounded-2xl flex flex-col justify-between hover:border-emerald-500/50 transition\">\n                        <div>\n                            <div class=\"flex justify-between items-start mb-2\">\n                                <span class=\"text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg font-medium\">${item.tag}</span>\n                                <span class=\"text-xs text-slate-400\">~${item.kcal}</span>\n                            </div>\n                            <h3 class=\"font-bold text-lg text-white\">${item.name}</h3>\n                            <p class=\"text-xs text-slate-400 mt-1 line-clamp-2\">${item.desc}</p>\n                        </div>\n                        <div class=\"flex justify-between items-center mt-4 pt-3 border-t border-slate-700/60\">\n                            <span class=\"text-emerald-400 font-bold text-base\">${item.price} บาท</span>\n                            <button onclick=\"addToCart(${item.id})\" class=\"bg-slate-700 hover:bg-emerald-500 hover:text-slate-950 px-4 py-2 rounded-xl text-xs font-semibold transition\">\n                                + เพิ่มใส่ตะกร้า\n                            </button>\n                        </div>\n                    </div>\n                `;\n            });\n        }\n\n        function filterMenu(category, btnElement) {\n            currentFilter = category;\n            \n            // ปรับแต่งปุ่ม Active\n            document.querySelectorAll('.category-btn').forEach(btn => {\n                btn.classList.remove('bg-emerald-500', 'text-slate-950', 'font-semibold');\n                btn.classList.add('bg-slate-800', 'border', 'border-slate-700');\n            });\n            btnElement.classList.remove('bg-slate-800', 'border', 'border-slate-700');\n            btnElement.classList.add('bg-emerald-500', 'text-slate-950', 'font-semibold');\n\n            if (category === 'all') {\n                renderMenus(menus);\n            } else {\n                const filtered = menus.filter(m => m.category === category);\n                renderMenus(filtered);\n            }\n        }\n\n        function addToCart(id) {\n            const item = menus.find(m => m.id === id);\n            currentCart.push(item);\n            updateCartUI();\n        }\n\n        function updateCartUI() {\n            const cartBar = document.getElementById('cart-bar');\n            const countEl = document.getElementById('cart-count');\n            const totalEl = document.getElementById('cart-total');\n\n            if (currentCart.length > 0) {\n                cartBar.classList.remove('hidden');\n                countEl.innerText = currentCart.length;\n                const total = currentCart.reduce((sum, item) => sum + item.price, 0);\n                totalEl.innerText = total;\n            } else {\n                cartBar.classList.add('hidden');\n            }\n        }\n\n        function openBmiModal() {\n            document.getElementById('bmi-modal').classList.remove('hidden');\n        }\n\n        function closeBmiModal() {\n            document.getElementById('bmi-modal').classList.add('hidden');\n        }\n\n        function calculateAndApplyBMI() {\n            const w = parseFloat(document.getElementById('modal-weight').value);\n            const h = parseFloat(document.getElementById('modal-height').value);\n\n            if (!w || !h) {\n                alert('กรุณากรอกน้ำหนักและส่วนสูงให้ครบถ้วน');\n                return;\n            }\n\n            const heightM = h / 100;\n            const bmi = (w / (heightM * heightM)).toFixed(1);\n\n            let advice = '';\n            if (bmi < 18.5) {\n                advice = `BMI ของคุณคือ ${bmi} (ผอมเกินไป) • แนะนำเมนูเพิ่มพลังงานและโปรตีนสูง`;\n            } else if (bmi >= 18.5 && bmi < 25) {\n                advice = `BMI ของคุณคือ ${bmi} (ปกติ / สุขภาพดี) • สามารถเลือกทานได้หลากหลายเมนู`;\n            } else {\n                advice = `BMI ของคุณคือ ${bmi} (น้ำหนักเกิน/ท้วม) • ระบบได้คัดกรองเมนูสุขภาพและแคลต่ำมาไว้ด้านบนให้แล้ว`;\n                // สลับไปหมวดสุขภาพอัตโนมัติถ้า BMI เกิน\n                const healthyBtn = document.querySelectorAll('.category-btn')[2];\n                filterMenu('healthy', healthyBtn);\n            }\n\n            document.getElementById('bmi-banner-title').innerText = advice;\n            document.getElementById('bmi-banner').classList.remove('hidden');\n            closeBmiModal();\n        }\n\n        function clearBMI() {\n            document.getElementById('bmi-banner').classList.add('hidden');\n            filterMenu('all', document.querySelectorAll('.category-btn')[0]);\n        }\n\n        function checkout() {\n            alert('ส่งออเดอร์เข้าห้องครัว (KDS) เรียบร้อยแล้ว!');\n            currentCart = [];\n            updateCartUI();\n        }\n    </script>\n</body>\n</html>"
-  }
-}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสั่งอาหาร - ร้านอาหารทั่วไป</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen pb-24">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 p-4 shadow-md">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div>
+                <h1 class="text-lg font-bold text-emerald-400">🍽️ ร้านอาหารสุขใจ (โต๊ะ 01)</h1>
+                <p class="text-xs text-slate-400">สั่งอาหารสะดวก ไม่ต้องรอนาน</p>
+            </div>
+            <button onclick="openBmiModal()" class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-xs px-3 py-2 rounded-xl font-medium hover:bg-emerald-500/30 transition">
+                💡 คำนวณ BMI / เมนูสุขภาพ
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto p-4">
+        
+        <!-- BMI Banner Alert (Optional toggle) -->
+        <div id="bmi-banner" class="bg-emerald-950/40 border border-emerald-500/30 p-4 rounded-2xl mb-6 hidden">
+            <div class="flex justify-between items-start">
+                <div>
+                    <h3 class="font-bold text-emerald-400 text-sm" id="bmi-banner-title">ผลลัพธ์ BMI ของคุณ</h3>
+                    <p class="text-xs text-slate-300 mt-1" id="bmi-banner-desc">แนะนำเมนูอาหารที่เหมาะกับสภาพร่างกายของคุณด้านล่างนี้</p>
+                </div>
+                <button onclick="clearBMI()" class="text-xs text-slate-400 hover:text-white">ปิด</button>
+            </div>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-none">
+            <button onclick="filterMenu('all', this)" class="category-btn px-4 py-2 bg-emerald-500 text-slate-950 font-semibold text-sm rounded-xl whitespace-nowrap transition">ทั้งหมด</button>
+            <button onclick="filterMenu('single', this)" class="category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700">อาหารจานเดียว</button>
+            <button onclick="filterMenu('healthy', this)" class="category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700">🥗 เมนูสุขภาพ / คลีน</button>
+            <button onclick="filterMenu('soup', this)" class="category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700">แกง / ต้มยำ</button>
+            <button onclick="filterMenu('drink', this)" class="category-btn px-4 py-2 bg-slate-800 border border-slate-700 text-sm rounded-xl whitespace-nowrap transition hover:bg-slate-700">เครื่องดื่ม</button>
+        </div>
+
+        <!-- Menu List Grid -->
+        <div id="menu-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- รายการอาหารจะถูกสร้างด้วย JavaScript -->
+        </div>
+    </main>
+
+    <!-- Floating Cart Bar -->
+    <div id="cart-bar" class="fixed bottom-0 left-0 right-0 bg-slate-800 border-t border-slate-700 p-4 shadow-2xl hidden">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div>
+                <p class="text-xs text-slate-400">รายการในตะกร้า</p>
+                <p class="text-sm font-bold text-white"><span id="cart-count">0</span> รายการ • <span id="cart-total" class="text-emerald-400">0</span> บาท</p>
+            </div>
+            <button onclick="checkout()" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold px-6 py-2.5 rounded-xl transition shadow-lg">
+                ยืนยันสั่งอาหารเข้าครัว
+            </button>
+        </div>
+    </div>
+
+    <!-- BMI Modal -->
+    <div id="bmi-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-800 border border-slate-700 w-full max-w-md p-6 rounded-2xl shadow-2xl">
+            <h2 class="text-xl font-bold text-emerald-400 mb-2">คำนวณค่า BMI เพื่อเลือกเมนูที่เหมาะกับคุณ</h2>
+            <p class="text-xs text-slate-400 mb-4">ระบบจะช่วยคัดกรองเมนูแคลอรี่ต่ำหรือโปรตีนสูงให้คุณโดยอัตโนมัติ</p>
+            
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-slate-300">น้ำหนัก (กิโลกรัม)</label>
+                    <input type="number" id="modal-weight" placeholder="เช่น 60" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-emerald-500 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium mb-1 text-slate-300">ส่วนสูง (เซนติเมตร)</label>
+                    <input type="number" id="modal-height" placeholder="เช่น 170" class="w-full p-3 bg-slate-900 border border-slate-700 rounded-xl focus:outline-none focus:border-emerald-500 text-sm">
+                </div>
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeBmiModal()" class="flex-1 py-2.5 bg-slate-700 hover:bg-slate-600 font-semibold text-sm rounded-xl transition">ยกเลิก</button>
+                <button onclick="calculateAndApplyBMI()" class="flex-1 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-semibold text-sm rounded-xl transition">ยืนยันคำนวณ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const menus = [
+            { id: 1, name: "กะเพราหมูสับไข่ดาว", category: "single", price: 60, tag: "ยอดฮิต", kcal: "450 Kcal", desc: "หมูสับคั่วพริกแห้งรสจัดจ้าน เสิร์ฟพร้อมข้าวสวยและไข่ดาวกรอบๆ" },
+            { id: 2, name: "ข้าวหน้าอกไก่ย่างเกาหลี (คลีน)", category: "healthy", price: 89, tag: "โปรตีนสูง / แคลต่ำ", kcal: "320 Kcal", desc: "อกไก่ย่างซอสสูตรพิเศษ ไร้น้ำมัน ทานคู่ข้าวกล้อง" },
+            { id: 3, name: "สลัดอกไก่ย่างน้ำใส", category: "healthy", price: 79, tag: "แคลอรี่ต่ำ", kcal: "180 Kcal", desc: "ผักสดกรอบล้างสะอาด ราดน้ำสลัดญี่ปุ่นไขมันต่ำ" },
+            { id: 4, name: "ต้มยำกุ้งน้ำข้น", category: "soup", price: 120, tag: "รสจัดจ้าน", kcal: "290 Kcal", desc: "กุ้งสดตัวโตในน้ำซุปต้มยำเครื่องเทศสมุนไพรแท้" },
+            { id: 5, name: "ข้าวผัดปูจานใหญ่", category: "single", price: 80, tag: "แนะนำ", kcal: "520 Kcal", desc: "เนื้อปูเน้นๆ ผัดเม็ดข้าวเรียงตัวสวยหอมกระทะ" },
+            { id: 6, name: "แกงจืดเต้าหู้หมูสับสาหร่าย", category: "soup", price: 70, tag: "ย่อยง่าย", kcal: "150 Kcal", desc: "ซุปร้อนๆ ซดคล่องคอ เหมาะสำหรับมื้อเบาๆ" },
+            { id: 7, name: "ชาไทยเย็นหวานน้อย", category: "drink", price: 40, tag: "เครื่องดื่ม", kcal: "160 Kcal", desc: "ชาไทยหอมเข้มข้น หวานน้อยกลมกล่อม" },
+            { id: 8, name: "น้ำอัดลม (โคล่า)", category: "drink", price: 25, tag: "เครื่องดื่ม", kcal: "140 Kcal", desc: "เย็นฉ่ำซ่าสะใจ" }
+        ];
+
+        let currentCart = [];
+        let currentFilter = 'all';
+
+        window.onload = function() {
+            renderMenus(menus);
+        };
+
+        function renderMenus(data) {
+            const grid = document.getElementById('menu-grid');
+            grid.innerHTML = '';
+            
+            if (data.length === 0) {
+                grid.innerHTML = '<p class="text-slate-400 text-center col-span-2 py-8">ไม่พบเมนูอาหารในหมวดหมู่นี้</p>';
+                return;
+            }
+
+            data.forEach(item => {
+                grid.innerHTML += `
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-2xl flex flex-col justify-between hover:border-emerald-500/50 transition">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2.5 py-1 rounded-lg font-medium">${item.tag}</span>
+                                <span class="text-xs text-slate-400">~${item.kcal}</span>
+                            </div>
+                            <h3 class="font-bold text-lg text-white">${item.name}</h3>
+                            <p class="text-xs text-slate-400 mt-1 line-clamp-2">${item.desc}</p>
+                        </div>
+                        <div class="flex justify-between items-center mt-4 pt-3 border-t border-slate-700/60">
+                            <span class="text-emerald-400 font-bold text-base">${item.price} บาท</span>
+                            <button onclick="addToCart(${item.id})" class="bg-slate-700 hover:bg-emerald-500 hover:text-slate-950 px-4 py-2 rounded-xl text-xs font-semibold transition">
+                                + เพิ่มใส่ตะกร้า
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterMenu(category, btnElement) {
+            currentFilter = category;
+            
+            document.querySelectorAll('.category-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-500', 'text-slate-950', 'font-semibold');
+                btn.classList.add('bg-slate-800', 'border', 'border-slate-700');
+            });
+            btnElement.classList.remove('bg-slate-800', 'border', 'border-slate-700');
+            btnElement.classList.add('bg-emerald-500', 'text-slate-950', 'font-semibold');
+
+            if (category === 'all') {
+                renderMenus(menus);
+            } else {
+                const filtered = menus.filter(m => m.category === category);
+                renderMenus(filtered);
+            }
+        }
+
+        function addToCart(id) {
+            const item = menus.find(m => m.id === id);
+            currentCart.push(item);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            const cartBar = document.getElementById('cart-bar');
+            const countEl = document.getElementById('cart-count');
+            const totalEl = document.getElementById('cart-total');
+
+            if (currentCart.length > 0) {
+                cartBar.classList.remove('hidden');
+                countEl.innerText = currentCart.length;
+                const total = currentCart.reduce((sum, item) => sum + item.price, 0);
+                totalEl.innerText = total;
+            } else {
+                cartBar.classList.add('hidden');
+            }
+        }
+
+        function openBmiModal() {
+            document.getElementById('bmi-modal').classList.remove('hidden');
+        }
+
+        function closeBmiModal() {
+            document.getElementById('bmi-modal').classList.add('hidden');
+        }
+
+        function calculateAndApplyBMI() {
+            const w = parseFloat(document.getElementById('modal-weight').value);
+            const h = parseFloat(document.getElementById('modal-height').value);
+
+            if (!w || !h) {
+                alert('กรุณากรอกน้ำหนักและส่วนสูงให้ครบถ้วน');
+                return;
+            }
+
+            const heightM = h / 100;
+            const bmi = (w / (heightM * heightM)).toFixed(1);
+
+            let advice = '';
+            if (bmi < 18.5) {
+                advice = `BMI ของคุณคือ ${bmi} (ผอมเกินไป) • แนะนำเมนูเพิ่มพลังงานและโปรตีนสูง`;
+            } else if (bmi >= 18.5 && bmi < 25) {
+                advice = `BMI ของคุณคือ ${bmi} (ปกติ / สุขภาพดี) • สามารถเลือกทานได้หลากหลายเมนู`;
+            } else {
+                advice = `BMI ของคุณคือ ${bmi} (น้ำหนักเกิน/ท้วม) • ระบบได้คัดกรองเมนูสุขภาพและแคลต่ำมาไว้ด้านบนให้แล้ว`;
+                const healthyBtn = document.querySelectorAll('.category-btn')[2];
+                filterMenu('healthy', healthyBtn);
+            }
+
+            document.getElementById('bmi-banner-title').innerText = advice;
+            document.getElementById('bmi-banner').classList.remove('hidden');
+            closeBmiModal();
+        }
+
+        function clearBMI() {
+            document.getElementById('bmi-banner').classList.add('hidden');
+            filterMenu('all', document.querySelectorAll('.category-btn')[0]);
+        }
+
+        function checkout() {
+            alert('ส่งออเดอร์เข้าห้องครัว (KDS) เรียบร้อยแล้ว!');
+            currentCart = [];
+            updateCartUI();
+        }
+    </script>
+</body>
+</html>
